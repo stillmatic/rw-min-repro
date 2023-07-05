@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/rs/xid"
 )
@@ -35,11 +36,13 @@ func main() {
 				"X-Request-ID": []string{guid.String()},
 			},
 		}
+		now := time.Now()
 		res, err := c.Do(req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		delta := time.Since(now)
 		defer res.Body.Close()
 		// decode to json
 		var resp response
@@ -49,7 +52,7 @@ func main() {
 			return
 		}
 		returnedID := res.Header.Get("X-Request-ID")
-		log.Println(fmt.Sprintf("[INFO] Got response to %s: %s", returnedID, resp.Body))
+		log.Println(fmt.Sprintf("[INFO] Got response to %s in %s: %s", returnedID, delta, resp.Body))
 		fmt.Fprintf(w, resp.Body)
 
 	})
