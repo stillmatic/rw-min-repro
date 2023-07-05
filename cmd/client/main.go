@@ -19,7 +19,6 @@ func main() {
 	// pull env var down, hit their ping endpoint every minute
 	c := http.Client{}
 	targetHost := os.Getenv("TARGET_HOST")
-	fmt.Printf("Starting client, hitting %s\n", targetHost)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		guid := xid.New()
@@ -54,9 +53,12 @@ func main() {
 		fmt.Fprintf(w, resp.Body)
 
 	})
-
-	err := http.ListenAndServe(":8000", nil)
-	if err != nil {
-		panic(err)
+	// this is public so needs a port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
 	}
+	port = fmt.Sprintf(":%s", port)
+	fmt.Printf("Starting client on port %s, hitting %s\n", port, targetHost)
+	http.ListenAndServe(port, nil)
 }
